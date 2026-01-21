@@ -41,6 +41,8 @@ logs/
 beatbunny.db
 .env
 models/
+CONTEXT.md
+workplan.md
 
 # Keep placeholder directories
 !outputs/.gitkeep
