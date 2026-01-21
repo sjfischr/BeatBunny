@@ -74,9 +74,14 @@ def run_generation_job(job_id, lyrics_text, tags_text, params, config):
         # Use the HeartMuLa pipeline for actual generation
         pipeline = models['pipeline']
         
+        # 6. Save Outputs
+        wav_filename = "audio.wav"
+        wav_path = os.path.join(job_dir, wav_filename)
+        
         with torch.no_grad():
-            # Generate using the HeartMuLa pipeline
-            result = pipeline(
+            # Pipeline saves directly to file and doesn't return wav data
+            # So we pass save_path and it will write the audio file
+            pipeline(
                 {
                     "lyrics": lyrics_text,
                     "tags": tags_text,
@@ -85,18 +90,12 @@ def run_generation_job(job_id, lyrics_text, tags_text, params, config):
                 temperature=temperature,
                 topk=topk,
                 cfg_scale=cfg_scale,
+                save_path=wav_path,
             )
         
-        # The pipeline returns a dict with 'wav' tensor
-        # wav is shape (1, samples) at 48kHz
-        audio_data = result['wav'].cpu().numpy().squeeze()
+        # Pipeline saved audio directly to wav_path
+        # Log confirmation
         sample_rate = 48000
-
-        # 6. Save Outputs
-        wav_filename = "audio.wav"
-        wav_path = os.path.join(job_dir, wav_filename)
-
-        sf.write(wav_path, audio_data, sample_rate)
         logger.info(f"Job {job_id}: Saved audio to {wav_path}")
 
         # Save metadata.json

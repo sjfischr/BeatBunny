@@ -55,6 +55,10 @@ def get_models(model_dir):
         raise FileNotFoundError(f"Model directory not found: {model_dir}")
 
     try:
+        # Configure PyTorch to use SDPA (scaled_dot_product_attention) backend
+        # This suppresses flash attention warnings and uses PyTorch's native implementation
+        os.environ['TORCH_ATTENTION_BACKEND'] = 'sdpa'
+        
         from heartlib import HeartMuLaGenPipeline
         
         logger.info("Initializing HeartMuLa model pipeline...")

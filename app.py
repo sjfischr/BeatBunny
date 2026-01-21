@@ -362,6 +362,113 @@ with gr.Blocks(title="BeatBunny MVP0", theme=theme, css=CUSTOM_CSS) as demo:
     gr.Markdown("# 🐇 BeatBunny `Studio`")
     
     with gr.Tabs():
+        # ============ GENERATE TAB ============
+        with gr.Tab("🎵 Generate", id="generate-tab"):
+            # Readiness warning banner
+            readiness_banner = gr.Textbox(
+                value="",
+                visible=False,
+                interactive=False,
+                show_label=False,
+                elem_id="readiness-banner"
+            )
+            
+            with gr.Row():
+                # LEFT COLUMN: Inputs
+                with gr.Column(scale=2, elem_classes="glass-panel"):
+                    with gr.Row():
+                        gr.Markdown("### 1. Lyrics")
+                        template_btn = gr.Button(
+                            "Insert Template", size="sm", variant="secondary"
+                        )
+
+                    lyrics_input = gr.Textbox(
+                        label="Lyrics (Text)",
+                        placeholder="Enter lyrics here... use [Verse], [Chorus] headers.",
+                        lines=10,
+                        elem_id="lyrics-box",
+                    )
+
+                    gr.Markdown("### 2. Style & Tags")
+                    gr.Markdown("💡 **Tip:** Use lowercase tags. Include `male vocals` or `female vocals` to control singer gender. Format: comma-separated, no spaces.")
+                    with gr.Row():
+                        tags_input = gr.Textbox(
+                            label="Tags", placeholder="rock,upbeat,male vocals,guitar", scale=3
+                        )
+                        preset_dropdown = gr.Dropdown(
+                            label="Presets", choices=PRESET_TAGS, scale=1
+                        )
+
+                    # Helper to append preset to tags
+                    def add_preset(current_tags, preset):
+                        if not preset:
+                            return current_tags
+                        if current_tags:
+                            return f"{current_tags}, {preset}"
+                        return preset
+
+                    preset_dropdown.change(
+                        add_preset, [tags_input, preset_dropdown], tags_input
+                    )
+                    template_btn.click(get_template_lyrics, outputs=lyrics_input)
+
+                    gr.Markdown("### 3. Parameters")
+                    with gr.Group():
+                        with gr.Row():
+                            cfg_slider = gr.Slider(
+                                label="CFG Scale (Guidance)",
+                                info="HeartMuLa default: 1.5. Higher = stronger conditioning.",
+                                minimum=1.0,
+                                maximum=10.0,
+                                value=1.5,
+                                step=0.1,
+                            )
+                            temp_slider = gr.Slider(
+                                label="Temperature",
+                                info="HeartMuLa default: 1.0. Lower = more deterministic.",
+                                minimum=0.1,
+                                maximum=2.0,
+                                value=1.0,
+                                step=0.1,
+                            )
+                        with gr.Row():
+                            top_k_slider = gr.Slider(
+                                label="Top-K Sampling",
+                                info="HeartMuLa default: 50. Higher = more diversity.",
+                                minimum=10,
+                                maximum=250,
+                                value=50,
+                                step=10,
+                            )
+                            length_dropdown = gr.Dropdown(
+                                label="Duration (seconds)", choices=[30, 60, 120, 240], value=30
+                            )
+                        seed_input = gr.Number(label="Seed (Optional)", precision=0, value=None)
+
+                    generate_btn = gr.Button("🎵 Generate Music", variant="primary", size="lg")
+
+                # RIGHT COLUMN: Outputs & History
+                with gr.Column(scale=2, elem_classes="glass-panel"):
+                    gr.Markdown("### Status & Output")
+                    status_box = gr.Textbox(label="Status", value="Ready", interactive=False)
+
+                    audio_output = gr.Audio(label="Generated Audio", type="filepath")
+                    download_files = gr.File(
+                        label="Download Artifacts", visible=False, file_count="multiple"
+                    )
+
+                    gr.Markdown("---")
+
+                    with gr.Row():
+                        gr.Markdown("### History")
+                        refresh_hist_btn = gr.Button("🔄", size="sm")
+
+                    history_list = gr.Dropdown(
+                        label="Recent Jobs (Select to load)",
+                        choices=load_history_list(),
+                        interactive=True,
+                    )
+
         # ============ SETUP TAB ============
         with gr.Tab("⚙️ Setup", id="setup-tab"):
             with gr.Row():
@@ -407,105 +514,6 @@ with gr.Blocks(title="BeatBunny MVP0", theme=theme, css=CUSTOM_CSS) as demo:
                     ).then(
                         fn=refresh_system_status,
                         outputs=system_status_md
-                    )
-
-        # ============ GENERATE TAB ============
-        with gr.Tab("🎵 Generate", id="generate-tab"):
-            # Readiness warning banner
-            readiness_banner = gr.Textbox(
-                value="",
-                visible=False,
-                interactive=False,
-                show_label=False,
-                elem_id="readiness-banner"
-            )
-            
-            with gr.Row():
-                # LEFT COLUMN: Inputs
-                with gr.Column(scale=2, elem_classes="glass-panel"):
-                    with gr.Row():
-                        gr.Markdown("### 1. Lyrics")
-                        template_btn = gr.Button(
-                            "Insert Template", size="sm", variant="secondary"
-                        )
-
-                    lyrics_input = gr.Textbox(
-                        label="Lyrics (Text)",
-                        placeholder="Enter lyrics here... use [Verse], [Chorus] headers.",
-                        lines=10,
-                        elem_id="lyrics-box",
-                    )
-
-                    gr.Markdown("### 2. Style & Tags")
-                    with gr.Row():
-                        tags_input = gr.Textbox(
-                            label="Tags", placeholder="rock, upbeat, male vocals...", scale=3
-                        )
-                        preset_dropdown = gr.Dropdown(
-                            label="Presets", choices=PRESET_TAGS, scale=1
-                        )
-
-                    # Helper to append preset to tags
-                    def add_preset(current_tags, preset):
-                        if not preset:
-                            return current_tags
-                        if current_tags:
-                            return f"{current_tags}, {preset}"
-                        return preset
-
-                    preset_dropdown.change(
-                        add_preset, [tags_input, preset_dropdown], tags_input
-                    )
-                    template_btn.click(get_template_lyrics, outputs=lyrics_input)
-
-                    gr.Markdown("### 3. Parameters")
-                    with gr.Group():
-                        with gr.Row():
-                            cfg_slider = gr.Slider(
-                                label="CFG Scale",
-                                minimum=1.0,
-                                maximum=10.0,
-                                value=3.0,
-                                step=0.1,
-                            )
-                            temp_slider = gr.Slider(
-                                label="Temperature",
-                                minimum=0.1,
-                                maximum=2.0,
-                                value=1.0,
-                                step=0.1,
-                            )
-                        with gr.Row():
-                            top_k_slider = gr.Slider(
-                                label="Top-K", minimum=0, maximum=250, value=250, step=1
-                            )
-                            length_dropdown = gr.Dropdown(
-                                label="Duration (seconds)", choices=[30, 60, 120, 240], value=30
-                            )
-                        seed_input = gr.Number(label="Seed (Optional)", precision=0, value=None)
-
-                    generate_btn = gr.Button("🎵 Generate Music", variant="primary", size="lg")
-
-                # RIGHT COLUMN: Outputs & History
-                with gr.Column(scale=2, elem_classes="glass-panel"):
-                    gr.Markdown("### Status & Output")
-                    status_box = gr.Textbox(label="Status", value="Ready", interactive=False)
-
-                    audio_output = gr.Audio(label="Generated Audio", type="filepath")
-                    download_files = gr.File(
-                        label="Download Artifacts", visible=False, file_count="multiple"
-                    )
-
-                    gr.Markdown("---")
-
-                    with gr.Row():
-                        gr.Markdown("### History")
-                        refresh_hist_btn = gr.Button("🔄", size="sm")
-
-                    history_list = gr.Dropdown(
-                        label="Recent Jobs (Select to load)",
-                        choices=load_history_list(),
-                        interactive=True,
                     )
             
             # Update readiness banner when tab loads
