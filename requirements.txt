@@ -1,0 +1,20 @@
+# Core Application
+gradio>=4.0.0
+python-dotenv>=1.0.0
+
+# Machine Learning & Audio
+torch>=2.1.0 --index-url https://download.pytorch.org/whl/cu118
+numpy
+scipy
+soundfile
+
+# Model Downloading
+huggingface_hub>=0.20.0
+
+# Model Runtime (HeartMuLa)
+transformers>=4.30.0
+accelerate
+
+# HeartMuLa library (install from source)
+# pip install git+https://github.com/HeartMuLa/heartlib.git
+# Or clone and: pip install -e ./heartlib

@@ -1,0 +1,11 @@
+{
+    "genres": [
+        "Pop", "Rock", "Electronic", "Hip Hop", "Jazz", "Classical", "Ambient", "Folk", "R&B", "Metal"
+    ],
+    "moods": [
+        "Happy", "Sad", "Energetic", "Relaxed", "Dark", "Romantic", "Uplifting", "Melancholic"
+    ],
+    "instruments": [
+        "Piano", "Guitar", "Synthesizer", "Drums", "Strings", "Bass", "Orchestra"
+    ]
+}
