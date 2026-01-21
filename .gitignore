@@ -43,6 +43,8 @@ beatbunny.db
 models/
 CONTEXT.md
 workplan.md
+*.mp3
+*.wav
 
 # Keep placeholder directories
 !outputs/.gitkeep
