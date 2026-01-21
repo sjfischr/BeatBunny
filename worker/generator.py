@@ -62,24 +62,35 @@ def run_generation_job(job_id, lyrics_text, tags_text, params, config):
                 torch.cuda.manual_seed_all(seed)
             logger.info(f"Job {job_id}: Using seed {seed}")
 
-        # 5. Generate Audio (Placeholder Logic)
+        # 5. Generate Audio
         logger.info(f"Job {job_id}: Generating audio with params: {params}")
 
         # Extract params
-        duration_s = int(params.get("max_length", 30))
-        sample_rate = 32000  # Standard for many models, adjust as needed
+        duration_ms = int(params.get("max_length", 30)) * 1000  # Convert seconds to ms
+        temperature = float(params.get("temperature", 1.0))
+        topk = int(params.get("top_k", 250))
+        cfg_scale = float(params.get("cfg_scale", 3.0))
 
-        # --- MOCK GENERATION START ---
-        # Replace this block with actual HeartMuLa inference:
-        # audio_tensor = models['model'].generate(lyrics, tags, **params)
-
-        # Simulating generation time
-        time.sleep(2)
-
-        # Generate silence/noise for MVP testing if no real model
-        # 0.5s of white noise so we have a valid WAV file
-        audio_data = np.random.uniform(-0.1, 0.1, int(sample_rate * duration_s))
-        # --- MOCK GENERATION END ---
+        # Use the HeartMuLa pipeline for actual generation
+        pipeline = models['pipeline']
+        
+        with torch.no_grad():
+            # Generate using the HeartMuLa pipeline
+            result = pipeline(
+                {
+                    "lyrics": lyrics_text,
+                    "tags": tags_text,
+                },
+                max_audio_length_ms=duration_ms,
+                temperature=temperature,
+                topk=topk,
+                cfg_scale=cfg_scale,
+            )
+        
+        # The pipeline returns a dict with 'wav' tensor
+        # wav is shape (1, samples) at 48kHz
+        audio_data = result['wav'].cpu().numpy().squeeze()
+        sample_rate = 48000
 
         # 6. Save Outputs
         wav_filename = "audio.wav"

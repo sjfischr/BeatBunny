@@ -29,9 +29,10 @@ BeatBunny wraps **HeartMuLa-oss-3B** into a simple web UI so you can generate so
 - **Disk**: ~10GB for model weights + space for outputs.
 
 ### Software
-- Python 3.10+
+- **Python 3.10** (Required - heartlib pins torch==2.4.1 which is not available for Python 3.11+)
 - Git
 - ffmpeg (Optional, for MP3 conversion)
+- CUDA 12.4+ drivers (for GPU support)
 
 ---
 
@@ -51,8 +52,12 @@ source .venv/bin/activate      # Linux/Mac
 ### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
+
+# IMPORTANT: After installing heartlib, you must reinstall PyTorch with CUDA support
+# heartlib installs CPU-only torch by default
+pip install torch==2.4.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 ```
-*Note: If you need a specific PyTorch version (e.g., for different CUDA drivers), visit [pytorch.org](https://pytorch.org).*
+*Note: Use CUDA 12.4 index for torch 2.4.1. For other versions, visit [pytorch.org](https://pytorch.org).*
 
 ### 3. Download Model Weights
 BeatBunny requires the **HeartMuLa-oss-3B** model weights. 
@@ -87,7 +92,12 @@ BeatBunny cannot find your GPU.
    ```bash
    python -c "import torch; print(torch.cuda.is_available())"
    ```
-2. If `False`, reinstall PyTorch with CUDA support (see `requirements.txt` or [pytorch.org](https://pytorch.org)).
+2. If `False`, verify you have the CUDA-enabled torch:
+   ```bash
+   python -c "import torch; print(torch.__version__)"
+   ```
+   - Should show `2.4.1+cu124` (not `2.4.1+cpu`)
+   - If CPU-only, reinstall: `pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cu124`
 
 ### "CUDA Out of Memory"
 The generation is too large for your VRAM.

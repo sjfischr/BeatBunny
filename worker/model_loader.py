@@ -54,37 +54,30 @@ def get_models(model_dir):
     if not os.path.exists(model_dir):
         raise FileNotFoundError(f"Model directory not found: {model_dir}")
 
-    # TODO: Replace with actual HeartMuLa imports once upstream package is available
-    # For MVP0, we assume the user has the code available or we use a placeholder structure
-    # This block mimics the loading process
-
     try:
-        # Example: from heartmula import HeartMuLa
-        # Example: from heartcodec import HeartCodec
-
-        # Placeholder for actual loading logic
-        # model = HeartMuLa.from_pretrained(model_dir)
-        # codec = HeartCodec.from_pretrained(model_dir)
-
-        # Simulating a load for the scaffold
-        logger.info("Initializing HeartMuLa model (Placeholder)...")
-
-        # Real implementation would look like:
-        # model = AutoModelForCausalLM.from_pretrained(model_dir, torch_dtype=torch.float16).cuda()
-        # codec = AudioCodec.from_pretrained(model_dir).cuda()
-
-        # For now, we return a stub dictionary or object
+        from heartlib import HeartMuLaGenPipeline
+        
+        logger.info("Initializing HeartMuLa model pipeline...")
+        
+        # Load the HeartMuLa generation pipeline
+        # This loads both HeartMuLa-oss-3B and HeartCodec-oss
+        pipeline = HeartMuLaGenPipeline.from_pretrained(
+            model_dir,
+            device=torch.device("cuda"),
+            dtype=torch.bfloat16,
+            version="3B"
+        )
+        
         _LOADED_MODELS = {
-            "model": "Placeholder_HeartMuLa_3B",
-            "codec": "Placeholder_HeartCodec",
+            "pipeline": pipeline,
             "device": "cuda",
         }
 
         logger.info("Models loaded successfully.")
 
     except ImportError as e:
-        logger.error("Failed to import model libraries.")
-        logger.error("Ensure all dependencies are installed per README.")
+        logger.error("Failed to import HeartMuLa library.")
+        logger.error("Ensure heartlib is installed: pip install git+https://github.com/HeartMuLa/heartlib.git")
         raise e
     except Exception as e:
         logger.error(f"Error loading models: {e}")
