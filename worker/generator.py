@@ -74,9 +74,16 @@ def run_generation_job(job_id, lyrics_text, tags_text, params, config):
         # Use the HeartMuLa pipeline for actual generation
         pipeline = models['pipeline']
         
+        # Convert tags to lowercase (HeartMuLa requirement)
+        tags_text_lower = tags_text.lower()
+        
         # 6. Save Outputs
         wav_filename = "audio.wav"
         wav_path = os.path.join(job_dir, wav_filename)
+        
+        # Log what we're sending to pipeline for debugging
+        logger.info(f"Job {job_id}: Lyrics preview: {lyrics_text[:100]}...")
+        logger.info(f"Job {job_id}: Tags: {tags_text_lower}")
         
         with torch.no_grad():
             # Pipeline saves directly to file and doesn't return wav data
@@ -84,7 +91,7 @@ def run_generation_job(job_id, lyrics_text, tags_text, params, config):
             pipeline(
                 {
                     "lyrics": lyrics_text,
-                    "tags": tags_text,
+                    "tags": tags_text_lower,
                 },
                 max_audio_length_ms=duration_ms,
                 temperature=temperature,

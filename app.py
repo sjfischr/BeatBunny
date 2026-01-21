@@ -94,7 +94,8 @@ def load_presets():
                 all_tags = []
                 for category in data.values():
                     all_tags.extend(category)
-                return sorted(all_tags)
+                # Convert all tags to lowercase (HeartMuLa requirement)
+                return sorted([tag.lower() for tag in all_tags])
         except Exception as e:
             logging.error(f"Failed to load presets: {e}")
     return []
@@ -216,6 +217,10 @@ def generate_music(lyrics, tags, cfg, temp, top_k, length, seed):
         if not tags or not tags.strip():
             yield "❌ Error: Tags cannot be empty.", None, gr.update(visible=False)
             return
+
+        # Log inputs for debugging
+        logging.info(f"Generate: Lyrics length={len(lyrics)}, Tags={tags}")
+        logging.info(f"Generate: Lyrics preview: {lyrics[:100]}...")
 
         # 1. Prepare params
         params = {
